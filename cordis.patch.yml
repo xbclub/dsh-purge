@@ -3,57 +3,19 @@
 # 清洗 + 演练台都在本插件内（lib/redteam、presets/redteam、skills/redteam）。
 # 只装 dsh-purge，不外接、不 link 其它红队包。
 
-# 关掉旧的独立红队包行（若用户以前装过 dsh-redteam-mode）
-- id: redteam-store
-  name: dsh-redteam-store
-  disabled: true
-
-- id: redteam-ui
-  name: dsh-redteam-ui
-  disabled: true
-
-- id: redteam-mode
-  name: dsh-redteam-mode
-  disabled: true
-
-- id: redteam-mode-store
-  name: dsh-redteam-mode/store
-  disabled: true
-
-- id: redteam-mode-ui
-  name: dsh-redteam-mode/ui
-  disabled: true
-
 - id: system-prompt
   config:
     includeHarnessIdentity: false
     personaPrefix: ""
     personaSuffix: ""
 
-# 本体 insert 写在用户层 profile/cordis.patch.yml（postinstall / 演练台自愈补）。
-# 这里只改已入队条目的 inject/config。再 insert 一次会 already queued（#152 / #154 / #159）。
-- id: dsh-purge
-  name: dsh-purge
-  inject: [systemPrompt, tools]
-  config:
-    enabled: true
-    autoApplyOnStart: false
-    autoUpdateOnStart: false
-    autoRevertOnMissing: false
-    injectOnce: false
-    stripMnemon: true
-    verbose: false
-    postPrompt: ""
-    postPromptOrder: 5100
-    autoRetry: true
-    retryMax: 3
-    autoContinue: false
-    continueMax: 3
-    continueText: "继续"
-    capabilityProtocol: true
-    hooksDenyBypass: true
-    anchorMode: auto
-    subagentControl: true
+# 本体的 insert（含 inject/config）统一由用户层 profile/cordis.patch.yml 提供：
+# postinstall 的 ensureProfileBodyInsert 会写入那条 insert，演练台自愈补也走同一入口。
+# 这里不能再 patch 一次——bundle 层先于 profile 层执行，此时该条目尚未存在，只会产生
+# `patch: entry "dsh-purge" not found`；也不能再 insert 一次，会 already queued
+# （#152 / #154 / #159）。
+# 这里省掉的 autoApplyOnStart / anchorMode / subagentControl 等字段，lib/index.js 的
+# DEFAULTS 已给出逐一相同的默认值，不写等价。
 
 - insert:
     # 演练台：预设 + 技能落地（本插件 lib/redteam）
