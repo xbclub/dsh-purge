@@ -4,7 +4,14 @@ import { fileURLToPath } from "node:url";
 import { sealSlot } from "../lib/table-key.js";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const src = path.join(root, "lib", "default-prompt-inject.md");
+// 提示词源按语言分文件存放：default-prompt-inject.<lang>.md。
+// 加密槽只承载一份正文（openSlot() 返回单个字符串），因此一次只嵌入一种语言，
+// 默认中文；需要英文版时用 DSH_PURGE_PROMPT_LANG=en 覆盖。
+const lang = (process.env.DSH_PURGE_PROMPT_LANG || "zh").trim().toLowerCase();
+if (!/^[a-z]{2}(-[a-z]{2})?$/.test(lang)) {
+  throw new Error(`invalid DSH_PURGE_PROMPT_LANG: ${lang}`);
+}
+const src = path.join(root, "lib", `default-prompt-inject.${lang}.md`);
 const dest = path.join(root, "lib", "asset-table.js");
 
 if (!fs.existsSync(src)) {
